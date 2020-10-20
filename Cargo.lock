@@ -1804,6 +1804,8 @@ dependencies = [
  "deadpool-postgres",
  "dotenv",
  "serde 1.0.117",
+ "tokio-pg-mapper",
+ "tokio-pg-mapper-derive",
  "tokio-postgres",
 ]
 
@@ -1826,6 +1828,26 @@ dependencies = [
  "signal-hook-registry",
  "slab",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "tokio-pg-mapper"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c9e1579e20815e41802b181613c30eaa3cb3ac2a0691683f3dcd9c96e5cfa799"
+dependencies = [
+ "tokio-postgres",
+]
+
+[[package]]
+name = "tokio-pg-mapper-derive"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3b6945ad3b3b9f035740a75b59b8fa0708514485967649d931255cd5acd4e614"
+dependencies = [
+ "quote",
+ "syn",
+ "tokio-postgres",
 ]
 
 [[package]]

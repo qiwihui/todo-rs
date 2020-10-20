@@ -1,13 +1,7 @@
 use crate::models::{TodoItem, TodoList};
 use deadpool_postgres::Client;
 use std::io::Error;
-use tokio_postgres::Row;
-
-fn row_to_todo(row: &Row) -> TodoList {
-    let id: i32 = row.get(0);
-    let title: String = row.get(1);
-    TodoList { id, title }
-}
+use tokio_pg_mapper::FromTokioPostgresRow;
 
 pub async fn get_todos(client: &Client) -> Result<Vec<TodoList>, Error> {
     let statement = client
@@ -19,7 +13,7 @@ pub async fn get_todos(client: &Client) -> Result<Vec<TodoList>, Error> {
         .await
         .expect("Error getting todo lists")
         .iter()
-        .map(|row| row_to_todo(row))
+        .map(|row| TodoList::from_row_ref(row).unwrap())
         .collect::<Vec<TodoList>>();
 
     Ok(todos)
