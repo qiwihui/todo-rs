@@ -5,7 +5,7 @@ mod models;
 
 use actix_web::{get, web, App, HttpServer, Responder};
 use dotenv::dotenv;
-use handlers::todos;
+use handlers::{todo, todos};
 use std::io;
 use tokio_postgres::{self, NoTls};
 
@@ -28,6 +28,7 @@ async fn main() -> io::Result<()> {
             .data(pool.clone())
             .service(hello)
             .route("/todos{_:/?}", web::get().to(todos))
+            .route("/todos/{list_id}{_:/?}", web::get().to(todo))
     })
     .bind(format!("{}:{}", cfg.server.host, cfg.server.port))?
     .run()
