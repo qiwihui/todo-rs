@@ -5,11 +5,11 @@ mod models;
 
 use actix_web::{get, middleware, web, App, HttpServer, Responder};
 use dotenv::dotenv;
-use handlers::{todo, todos};
 use env_logger;
 use log::info;
+use models::AppState;
 use std::io;
-use tokio_postgres::{self, NoTls};
+use tokio_postgres::NoTls;
 
 #[get("/")]
 async fn hello() -> impl Responder {
@@ -31,11 +31,12 @@ async fn main() -> io::Result<()> {
     );
     HttpServer::new(move || {
         App::new()
-            .data(pool.clone())
+            .data(AppState { pool: pool.clone() })
             .wrap(middleware::Logger::default())
             .service(hello)
-            .route("/todos{_:/?}", web::get().to(todos))
-            .route("/todos/{list_id}{_:/?}", web::get().to(todo))
+            .route("/todos{_:/?}", web::get().to(handlers::todos))
+            .route("/todos{_:/?}", web::post().to(handlers::create_todo))
+            .route("/todos/{list_id}{_:/?}", web::get().to(handlers::todo))
     })
     .bind(format!("{}:{}", cfg.server.host, cfg.server.port))?
     .run()

@@ -1,3 +1,4 @@
+use deadpool_postgres::Pool;
 use serde::{Deserialize, Serialize};
 use tokio_pg_mapper_derive::PostgresMapper;
 
@@ -15,4 +16,8 @@ pub struct TodoItem {
     pub title: String,
     pub checked: bool,
     pub list_id: i32,
+}
+
+pub struct AppState {
+    pub pool: Pool,
 }
