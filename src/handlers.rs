@@ -1,6 +1,7 @@
 use crate::db;
+use crate::errors::Error;
 use crate::models::AppState;
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, HttpResponse, ResponseError};
 use deadpool_postgres::Client;
 use serde::{Deserialize, Serialize};
 
@@ -25,7 +26,7 @@ pub struct CreateTodoItem {
     pub title: String,
 }
 
-pub async fn todos(state: web::Data<AppState>) -> impl Responder {
+pub async fn todos(state: web::Data<AppState>) -> Result<HttpResponse, Error> {
     let client: Client = state
         .pool
         .get()
@@ -33,12 +34,15 @@ pub async fn todos(state: web::Data<AppState>) -> impl Responder {
         .expect("Error connecting to the database");
     let result = db::get_todos(&client).await;
     match result {
-        Ok(todos) => HttpResponse::Ok().json(todos),
-        Err(_) => HttpResponse::InternalServerError().into(),
+        Ok(todos) => Ok(HttpResponse::Ok().json(todos)),
+        Err(e) => Ok(e.error_response()),
     }
 }
 
-pub async fn todo(info: web::Path<GetTodoList>, state: web::Data<AppState>) -> impl Responder {
+pub async fn todo(
+    info: web::Path<GetTodoList>,
+    state: web::Data<AppState>,
+) -> Result<HttpResponse, Error> {
     let client: Client = state
         .pool
         .get()
@@ -47,15 +51,15 @@ pub async fn todo(info: web::Path<GetTodoList>, state: web::Data<AppState>) -> i
 
     let result = db::get_todo(&client, info.list_id).await;
     match result {
-        Ok(todo) => HttpResponse::Ok().json(todo),
-        Err(_) => HttpResponse::InternalServerError().into(),
+        Ok(todo) => Ok(HttpResponse::Ok().json(todo)),
+        Err(e) => Ok(e.error_response()),
     }
 }
 
 pub async fn create_todo(
     info: web::Json<CreateTodoList>,
     state: web::Data<AppState>,
-) -> impl Responder {
+) -> Result<HttpResponse, Error> {
     let client: Client = state
         .pool
         .get()
@@ -63,12 +67,15 @@ pub async fn create_todo(
         .expect("Error connecting to the database");
     let result = db::create_todo(&client, info.0.title.clone()).await;
     match result {
-        Ok(todo) => HttpResponse::Ok().json(todo),
-        Err(_) => HttpResponse::InternalServerError().into(),
+        Ok(todo) => Ok(HttpResponse::Ok().json(todo)),
+        Err(e) => Ok(e.error_response()),
     }
 }
 
-pub async fn items(info: web::Path<GetTodoList>, state: web::Data<AppState>) -> impl Responder {
+pub async fn items(
+    info: web::Path<GetTodoList>,
+    state: web::Data<AppState>,
+) -> Result<HttpResponse, Error> {
     let client: Client = state
         .pool
         .get()
@@ -77,8 +84,8 @@ pub async fn items(info: web::Path<GetTodoList>, state: web::Data<AppState>) -> 
 
     let result = db::get_items(&client, info.list_id).await;
     match result {
-        Ok(items) => HttpResponse::Ok().json(items),
-        Err(_) => HttpResponse::InternalServerError().into(),
+        Ok(items) => Ok(HttpResponse::Ok().json(items)),
+        Err(e) => Ok(e.error_response()),
     }
 }
 
@@ -86,7 +93,7 @@ pub async fn create_item(
     todo: web::Path<GetTodoList>,
     info: web::Json<CreateTodoItem>,
     state: web::Data<AppState>,
-) -> impl Responder {
+) -> Result<HttpResponse, Error> {
     let client: Client = state
         .pool
         .get()
@@ -95,12 +102,15 @@ pub async fn create_item(
 
     let result = db::create_item(&client, todo.list_id, info.0.title.clone()).await;
     match result {
-        Ok(item) => HttpResponse::Ok().json(item),
-        Err(_) => HttpResponse::InternalServerError().into(),
+        Ok(item) => Ok(HttpResponse::Ok().json(item)),
+        Err(e) => Ok(e.error_response()),
     }
 }
 
-pub async fn get_item(info: web::Path<GetTodoItem>, state: web::Data<AppState>) -> impl Responder {
+pub async fn get_item(
+    info: web::Path<GetTodoItem>,
+    state: web::Data<AppState>,
+) -> Result<HttpResponse, Error> {
     let client: Client = state
         .pool
         .get()
@@ -109,8 +119,8 @@ pub async fn get_item(info: web::Path<GetTodoItem>, state: web::Data<AppState>) 
 
     let result = db::get_item(&client, info.list_id, info.item_id).await;
     match result {
-        Ok(item) => HttpResponse::Ok().json(item),
-        Err(_) => HttpResponse::InternalServerError().into(),
+        Ok(item) => Ok(HttpResponse::Ok().json(item)),
+        Err(e) => Ok(e.error_response()),
     }
 }
 
@@ -122,7 +132,7 @@ pub struct ResultResponse {
 pub async fn check_todo(
     info: web::Path<GetTodoItem>,
     state: web::Data<AppState>,
-) -> impl Responder {
+) -> Result<HttpResponse, Error> {
     let client: Client = state
         .pool
         .get()
@@ -131,7 +141,7 @@ pub async fn check_todo(
 
     let result = db::check_todo(&client, info.list_id, info.item_id).await;
     match result {
-        Ok(yes_or_no) => HttpResponse::Ok().json(ResultResponse { result: yes_or_no }),
-        Err(_) => HttpResponse::InternalServerError().into(),
+        Ok(yes_or_no) => Ok(HttpResponse::Ok().json(ResultResponse { result: yes_or_no })),
+        Err(e) => Ok(e.error_response()),
     }
 }

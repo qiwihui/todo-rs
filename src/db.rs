@@ -1,6 +1,6 @@
+use crate::errors::Error;
 use crate::models::{TodoItem, TodoList};
 use deadpool_postgres::Client;
-use std::io::{Error, ErrorKind};
 use tokio_pg_mapper::FromTokioPostgresRow;
 
 pub async fn get_todos(client: &Client) -> Result<Vec<TodoList>, Error> {
@@ -33,7 +33,7 @@ pub async fn get_todo(client: &Client, list_id: i32) -> Result<TodoList, Error> 
 
     match may_todo {
         Some(todo) => Ok(todo),
-        None => Err(Error::new(ErrorKind::NotFound, "Not found")),
+        None => Err(Error::NotFound("Not found".into())),
     }
 }
 
@@ -51,7 +51,9 @@ pub async fn create_todo(client: &Client, title: String) -> Result<TodoList, Err
         .map(|row| TodoList::from_row_ref(row).unwrap())
         .collect::<Vec<TodoList>>()
         .pop()
-        .ok_or(Error::new(ErrorKind::Other, "Error creating todo list"))
+        .ok_or(Error::InternalServerError(
+            "Error creating todo list".into(),
+        ))
 }
 
 pub async fn get_items(client: &Client, list_id: i32) -> Result<Vec<TodoItem>, Error> {
@@ -84,7 +86,7 @@ pub async fn get_item(client: &Client, list_id: i32, item_id: i32) -> Result<Tod
 
     match may_item {
         Some(item) => Ok(item),
-        None => Err(Error::new(ErrorKind::NotFound, "Not found")),
+        None => Err(Error::NotFound("Not found".into())),
     }
 }
 
@@ -102,7 +104,9 @@ pub async fn create_item(client: &Client, list_id: i32, title: String) -> Result
         .map(|row| TodoItem::from_row_ref(row).unwrap())
         .collect::<Vec<TodoItem>>()
         .pop()
-        .ok_or(Error::new(ErrorKind::Other, "Error creating todo list"))
+        .ok_or(Error::InternalServerError(
+            "Error creating todo list".into(),
+        ))
 }
 
 pub async fn check_todo(client: &Client, list_id: i32, item_id: i32) -> Result<bool, Error> {
