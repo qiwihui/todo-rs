@@ -5,6 +5,7 @@ mod handlers;
 mod models;
 mod routes;
 
+use crate::config::{init_pool, Config};
 use actix_web::{middleware, App, HttpServer};
 use dotenv::dotenv;
 use env_logger;
@@ -12,7 +13,6 @@ use log::info;
 use models::AppState;
 use routes::routes;
 use std::io;
-use tokio_postgres::NoTls;
 
 #[actix_web::main]
 async fn main() -> io::Result<()> {
@@ -21,8 +21,8 @@ async fn main() -> io::Result<()> {
         std::env::set_var("RUST_LOG", "actix_web=info");
     }
     env_logger::init();
-    let cfg = crate::config::Config::from_env().unwrap();
-    let pool = cfg.pg.create_pool(NoTls).unwrap();
+    let cfg = Config::from_env().unwrap();
+    let pool = init_pool(&cfg).unwrap();
     info!(
         "Starting server at http://{}:{}",
         cfg.server.host, cfg.server.port

@@ -1,5 +1,7 @@
 use actix_web::http::StatusCode;
 use actix_web::{HttpResponse, ResponseError};
+pub use config::ConfigError as ConfError;
+use deadpool_postgres::config::ConfigError;
 use deadpool_postgres::PoolError;
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -10,6 +12,7 @@ pub enum Error {
     InternalServerError(String),
     NotFound(String),
     PoolError(String),
+    ConfigError(String),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -45,5 +48,17 @@ impl From<&String> for ErrorResponse {
 impl From<PoolError> for Error {
     fn from(error: PoolError) -> Self {
         Error::PoolError(error.to_string())
+    }
+}
+
+impl From<ConfigError> for Error {
+    fn from(error: ConfigError) -> Self {
+        Error::ConfigError(error.to_string())
+    }
+}
+
+impl From<ConfError> for Error {
+    fn from(error: ConfError) -> Self {
+        Error::ConfigError(error.to_string())
     }
 }
