@@ -18,6 +18,7 @@ pub struct TodoItem {
     pub list_id: i32,
 }
 
+#[derive(Clone)]
 pub struct AppState {
     pub pool: Pool,
 }

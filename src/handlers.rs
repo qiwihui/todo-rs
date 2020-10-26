@@ -21,7 +21,7 @@ pub struct GetTodoItem {
     pub item_id: i32,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct CreateTodoList {
     pub title: String,
 }

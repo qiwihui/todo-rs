@@ -4,6 +4,8 @@ mod errors;
 mod handlers;
 mod models;
 mod routes;
+#[cfg(test)]
+mod tests;
 
 use crate::config::{init_pool, Config};
 use actix_web::{middleware, App, HttpServer};
