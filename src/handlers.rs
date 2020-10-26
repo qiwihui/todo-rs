@@ -1,9 +1,14 @@
 use crate::db;
 use crate::errors::Error;
 use crate::models::AppState;
-use actix_web::{web, HttpResponse, ResponseError};
+use actix_web::{get, web, HttpResponse, Responder, ResponseError};
 use deadpool_postgres::Client;
 use serde::{Deserialize, Serialize};
+
+#[get("/")]
+async fn hello() -> impl Responder {
+    format!("Hello world!")
+}
 
 #[derive(Deserialize)]
 pub struct GetTodoList {

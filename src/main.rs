@@ -3,19 +3,16 @@ mod db;
 mod errors;
 mod handlers;
 mod models;
+mod routes;
 
-use actix_web::{get, middleware, web, App, HttpServer, Responder};
+use actix_web::{middleware, App, HttpServer};
 use dotenv::dotenv;
 use env_logger;
 use log::info;
 use models::AppState;
+use routes::routes;
 use std::io;
 use tokio_postgres::NoTls;
-
-#[get("/")]
-async fn hello() -> impl Responder {
-    format!("Hello world!")
-}
 
 #[actix_web::main]
 async fn main() -> io::Result<()> {
@@ -34,26 +31,7 @@ async fn main() -> io::Result<()> {
         App::new()
             .data(AppState { pool: pool.clone() })
             .wrap(middleware::Logger::default())
-            .service(hello)
-            .route("/todos{_:/?}", web::get().to(handlers::todos))
-            .route("/todos{_:/?}", web::post().to(handlers::create_todo))
-            .route("/todos/{list_id}{_:/?}", web::get().to(handlers::todo))
-            .route(
-                "/todos/{list_id}/items{_:/?}",
-                web::get().to(handlers::items),
-            )
-            .route(
-                "/todos/{list_id}/items{_:/?}",
-                web::post().to(handlers::create_item),
-            )
-            .route(
-                "/todos/{list_id}/items/{item_id}{_:/?}",
-                web::get().to(handlers::get_item),
-            )
-            .route(
-                "/todos/{list_id}/items/{item_id}{_:/?}",
-                web::put().to(handlers::check_todo),
-            )
+            .configure(routes)
     })
     .bind(format!("{}:{}", cfg.server.host, cfg.server.port))?
     .run()
